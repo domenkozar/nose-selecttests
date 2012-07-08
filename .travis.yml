@@ -6,4 +6,4 @@ install:
   - python setup.py install
   - pip install coverage
 script:
-  - bin/nosetests -v --with-coverage --cover-tests --cover-package=noseselecttests
+  - nosetests -v --with-coverage --cover-tests --cover-package=noseselecttests
