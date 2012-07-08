@@ -9,8 +9,7 @@ version = '0.1'
 setup(name='nose-selecttests',
       version=version,
       description="Specify whitelist of keywords for tests to be run by nose",
-      long_description="""\
-""",
+      long_description="""""",
       classifiers=[
       ],
       keywords='',
