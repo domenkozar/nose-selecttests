@@ -75,6 +75,15 @@ class NoseSelectPluginTest(unittest.TestCase):
         plugin.unselected_tests = []
         self.assertTrue(plugin._is_selected(name))
 
+    def test_is_selected_None(self):
+        # means we have SyntaxError in this file
+        name = None
+        plugin = NoseSelectPlugin()
+
+        plugin.selected_tests = ['configure']
+        plugin.unselected_tests = []
+        self.assertTrue(plugin._is_selected(name))
+
     def test_is_selected_case_insensitive(self):
         name = "noseselecttests.tests.NoseSelectPluginTest.test_configure_complex"
         plugin = NoseSelectPlugin()

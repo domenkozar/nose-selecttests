@@ -43,7 +43,9 @@ class NoseSelectPlugin(Plugin):
                 pattern = pattern + '*'
             if not pattern.startswith('*'):
                 pattern = '*' + pattern
-            if fnmatch(name.lower(), pattern.lower()):
+            if name is None or fnmatch(name.lower(), pattern.lower()):
+                # name will be None when we have SyntaxError,
+                # report that in any case
                 selected = True
 
         if selected == True:

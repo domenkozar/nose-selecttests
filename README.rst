@@ -91,6 +91,12 @@ To just exclude some tests, use `-e` which is provided by `nose` itself::
 History
 -------
 
+0.2 (2012/07/27)
+================
+
+- Report SyntaxErrors instead of crashing
+  [Domen Kožar]
+
 0.1 (2012/07/08)
 ================
 
