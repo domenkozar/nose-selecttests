@@ -1,0 +1,3 @@
+graft noseselecttests
+include *
+global-exclude *.pyc
