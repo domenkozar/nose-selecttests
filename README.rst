@@ -106,7 +106,7 @@ History
 -------
 
 
-0.3 (unreleased)
+0.3 (2012/12/29)
 ================
 
 - Removed code for excluding tests (-e already does that)
