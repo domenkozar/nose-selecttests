@@ -3,12 +3,16 @@ import unittest
 from noseselecttests import NoseSelectPlugin
 
 
-class MockOptParser(object):
+class DummyOptParser(object):
     def __init__(self):
         self.opts = []
 
     def add_option(self, *args, **kw):
         self.opts.append((args, kw))
+
+
+class DummyTest(object):
+    address = lambda x: ['foobar']
 
 
 class NoseSelectPluginTest(unittest.TestCase):
@@ -23,7 +27,7 @@ class NoseSelectPluginTest(unittest.TestCase):
 
     def test_options(self):
         plugin = NoseSelectPlugin()
-        parser = MockOptParser()
+        parser = DummyOptParser()
         plugin.add_options(parser)
 
         self.assertEqual(parser.opts, [
@@ -119,19 +123,12 @@ class NoseSelectPluginTest(unittest.TestCase):
         plugin.unselected_tests = ['complex']
         self.assertFalse(plugin._is_selected(name))
 
-    def _get_nose_tst(self):
-        class Test: pass
-
-        test = Test()
-        test.address = lambda: ['foobar']
-        return test
-
     def test_prepareTestCase_select(self):
         plugin = NoseSelectPlugin()
         plugin._is_selected = lambda x: True
-        self.assertEqual(plugin.prepareTestCase(self._get_nose_tst()), None)
+        self.assertEqual(plugin.prepareTestCase(DummyTest()), None)
 
     def test_prepareTestCase_exclude(self):
         plugin = NoseSelectPlugin()
         plugin._is_selected = lambda x: False
-        self.assertEqual(plugin.prepareTestCase(self._get_nose_tst())('test'), None)
+        self.assertEqual(plugin.prepareTestCase(DummyTest())('test'), None)
