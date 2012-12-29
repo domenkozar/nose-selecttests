@@ -35,9 +35,9 @@ class NoseSelectPluginTest(unittest.TestCase):
              {'action': 'append',
               'default': [],
               'dest': 'selected_tests',
-              'help': 'Run only tests that match case-insensitive to thisparameter',
-              'metavar': 'SELECT'}
-        )])
+              'help': 'Run only tests that match case-insensitive to this parameter',
+              'metavar': 'SELECT'})
+        ])
 
     def test_configure_none(self):
         plugin = NoseSelectPlugin()

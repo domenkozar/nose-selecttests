@@ -14,7 +14,7 @@ class NoseSelectPlugin(Plugin):
                           default=list(),
                           metavar="SELECT",
                           help="Run only tests that match case-insensitive to this"
-                          "parameter")
+                          " parameter")
 
     def configure(self, options, config):
         """Configure the plugin and system, based on selected options.
@@ -48,7 +48,7 @@ class NoseSelectPlugin(Plugin):
                 # report that in any case
                 selected = True
 
-        if selected == True:
+        if selected is True:
             for pattern in self.unselected_tests:
                 if not pattern.endswith('*'):
                     pattern = pattern + '*'
