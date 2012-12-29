@@ -1,4 +1,5 @@
-Simple `nose` plugin that enables developers to run subset of collected tests to spare some waiting time for better things.
+Simple `nose` plugin that enables developers to run subset of collected tests
+to spare some waiting time for better things. 
 
 Usage
 -----
@@ -69,6 +70,19 @@ Only run tests with keyword `configure` but exclude tests with keyword `complex`
 
     OK
 
+Multiple keywords resolve to ``OR`` operation::
+
+    $ nosetests -v -t none -t simple
+
+    test_configure_none (noseselecttests.tests.NoseSelectPluginTest) ... ok
+    test_configure_simple (noseselecttests.tests.NoseSelectPluginTest) ... ok
+    test_is_selected_simple (noseselecttests.tests.NoseSelectPluginTest) ... ok
+    
+    ----------------------------------------------------------------------
+    Ran 3 tests in 0.018s
+    
+    OK
+
 
 To just exclude some tests, use `-e` which is provided by `nose` itself::
 
@@ -91,11 +105,23 @@ To just exclude some tests, use `-e` which is provided by `nose` itself::
 History
 -------
 
+
+0.3 (unreleased)
+================
+
+- Removed code for excluding tests (-e already does that)
+  [Domen Kožar]
+
+- Don't select all tests that have None as test name (could be a module level SkipTest)
+  [Domen Kožar]
+
+
 0.2 (2012/07/27)
 ================
 
 - Report SyntaxErrors instead of crashing
   [Domen Kožar]
+
 
 0.1 (2012/07/08)
 ================

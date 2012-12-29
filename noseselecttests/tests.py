@@ -12,7 +12,19 @@ class DummyOptParser(object):
 
 
 class DummyTest(object):
-    address = lambda x: ['foobar']
+
+    def __init__(self, name, exc_class=None):
+        self.name = name
+        if exc_class:
+            class Test():
+                pass
+            self.test = Test()
+            self.test.exc_val = exc_class()
+        else:
+            self.test = None
+
+    def address(self):
+        return [self.name]
 
 
 class NoseSelectPluginTest(unittest.TestCase):
@@ -44,7 +56,6 @@ class NoseSelectPluginTest(unittest.TestCase):
         plugin.configure(self._get_options([]), None)
 
         self.assertEqual(plugin.selected_tests, [])
-        self.assertEqual(plugin.unselected_tests, [])
         self.assertFalse(plugin.enabled)
 
     def test_configure_empty_string(self):
@@ -52,7 +63,6 @@ class NoseSelectPluginTest(unittest.TestCase):
         plugin.configure(self._get_options(['']), None)
 
         self.assertEqual(plugin.selected_tests, [])
-        self.assertEqual(plugin.unselected_tests, [])
         self.assertFalse(plugin.enabled)
 
     def test_configure_simple(self):
@@ -60,15 +70,13 @@ class NoseSelectPluginTest(unittest.TestCase):
         plugin.configure(self._get_options(['foobar']), None)
 
         self.assertEqual(plugin.selected_tests, ['foobar'])
-        self.assertEqual(plugin.unselected_tests, [])
         self.assertTrue(plugin.enabled)
 
-    def test_configure_complex(self):
+    def test_configure_or(self):
         plugin = NoseSelectPlugin()
-        plugin.configure(self._get_options(['foobar', '!test', 'foo', '!boo']), None)
+        plugin.configure(self._get_options(['foobar', 'foo']), None)
 
         self.assertEqual(plugin.selected_tests, ['foobar', 'foo'])
-        self.assertEqual(plugin.unselected_tests, ['test', 'boo'])
         self.assertTrue(plugin.enabled)
 
     def test_is_selected_simple(self):
@@ -76,59 +84,40 @@ class NoseSelectPluginTest(unittest.TestCase):
         plugin = NoseSelectPlugin()
 
         plugin.selected_tests = ['configure']
-        plugin.unselected_tests = []
-        self.assertTrue(plugin._is_selected(name))
+        self.assertTrue(plugin._is_selected(DummyTest(name)))
 
-    def test_is_selected_None(self):
+    def test_is_selected_SyntaxError(self):
         # means we have SyntaxError in this file
         name = None
         plugin = NoseSelectPlugin()
 
         plugin.selected_tests = ['configure']
-        plugin.unselected_tests = []
-        self.assertTrue(plugin._is_selected(name))
+        self.assertTrue(plugin._is_selected(DummyTest(name, exc_class=SyntaxError)))
 
     def test_is_selected_case_insensitive(self):
         name = "noseselecttests.tests.NoseSelectPluginTest.test_configure_complex"
         plugin = NoseSelectPlugin()
         plugin.selected_tests = ['noseselectplugintest']
-        plugin.unselected_tests = []
-        self.assertTrue(plugin._is_selected(name))
+        self.assertTrue(plugin._is_selected(DummyTest(name)))
 
     def test_is_selected_wildcard(self):
         name = "noseselecttests.tests.NoseSelectPluginTest.test_configure_complex"
         plugin = NoseSelectPlugin()
         plugin.selected_tests = ['configure*complex']
-        plugin.unselected_tests = []
-        self.assertTrue(plugin._is_selected(name))
+        self.assertTrue(plugin._is_selected(DummyTest(name)))
 
     def test_is_selected_negative(self):
         name = "noseselecttests.tests.NoseSelectPluginTest.test_configure_complex"
         plugin = NoseSelectPlugin()
         plugin.selected_tests = ['foobar']
-        plugin.unselected_tests = []
-        self.assertFalse(plugin._is_selected(name))
-
-    def test_is_selected_unselected_override(self):
-        name = "noseselecttests.tests.NoseSelectPluginTest.test_configure_complex"
-        plugin = NoseSelectPlugin()
-        plugin.selected_tests = ['configure']
-        plugin.unselected_tests = ['complex']
-        self.assertFalse(plugin._is_selected(name))
-
-    def test_is_selected_unselected(self):
-        name = "noseselecttests.tests.NoseSelectPluginTest.test_configure_complex"
-        plugin = NoseSelectPlugin()
-        plugin.selected_tests = []
-        plugin.unselected_tests = ['complex']
-        self.assertFalse(plugin._is_selected(name))
+        self.assertFalse(plugin._is_selected(DummyTest(name)))
 
     def test_prepareTestCase_select(self):
         plugin = NoseSelectPlugin()
         plugin._is_selected = lambda x: True
-        self.assertEqual(plugin.prepareTestCase(DummyTest()), None)
+        self.assertEqual(plugin.prepareTestCase(DummyTest('foobar')), None)
 
     def test_prepareTestCase_exclude(self):
         plugin = NoseSelectPlugin()
         plugin._is_selected = lambda x: False
-        self.assertEqual(plugin.prepareTestCase(DummyTest())('test'), None)
+        self.assertEqual(plugin.prepareTestCase(DummyTest('foobar'))('test'), None)
