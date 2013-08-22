@@ -4,8 +4,7 @@ from nose.plugins.base import Plugin
 
 
 class NoseSelectPlugin(Plugin):
-    """Selects test cases to be run based on their attributes.
-    """
+    """Selects test to run based on test function or method names using glob patterns (See fnmatch)."""
 
     def options(self, parser, env):
         """Register command line options"""
@@ -13,42 +12,54 @@ class NoseSelectPlugin(Plugin):
                           dest="selected_tests", action="append",
                           default=list(),
                           metavar="SELECT",
-                          help="Run only tests that match case-insensitive to this"
-                          " parameter")
+                          help="Only run tests matching this glob pattern (*?[]) (case-insensitive)")
 
     def configure(self, options, config):
-        """Configure the plugin and system, based on selected options.
-        """
         self.selected_tests = []
 
         for test_name in options.selected_tests:
-            if not test_name:
-                continue
-            self.selected_tests.append(test_name)
+            if test_name:
+                self.selected_tests.append(test_name)
 
         if self.selected_tests:
             self.enabled = True
 
-    def _is_selected(self, test):
-        """Based on configuration and name of the test determine
-        if it should be selected or not.
-        """
-        name = '.'.join(filter(None, test.address()[-2:]))
+    def _is_selected(self, test_fun):
+        """Return True if a test function or method name should be selected based on patterns."""
+        if not test_fun:
+            return
+
+        name = funame(test_fun)
+            
         for pattern in self.selected_tests:
             if not pattern.endswith('*'):
                 pattern = pattern + '*'
             if not pattern.startswith('*'):
                 pattern = '*' + pattern
-
-            if getattr(test.test, 'exc_val', None) and isinstance(test.test.exc_val, SyntaxError):
-                # pass SyntaxErrors through to be sure we are not missing something
+            if fnmatch(name.lower(), pattern.lower()):
                 return True
 
-            if name and fnmatch(name.lower(), pattern.lower()):
-                return True
+        # not None: None means don't care, not False.
+        return False 
 
-    def prepareTestCase(self, test):
-        """Nose plugin method to filter out tests that haven't been selected.
-        """
-        if not self._is_selected(test):
-            return lambda x: None
+    def wantFunction(self, function):
+        return self._is_selected(function)
+    
+    def wantMethod(self, method):
+        return self._is_selected(method)
+
+
+def funame(fun):
+    '''Return the context qualified name of a function or method'''
+    # name proper
+    names = [fun.__name__]
+    # parent class if method
+    if hasattr(fun, 'im_name'):
+        # this is a method
+        names.insert(0, fun.im_name.__name__)
+    #module, but ignore __main__ module
+    if not fun.__module__.startswith('_'):
+        names.insert(0, fun.__module__)
+    
+    name = '.'.join(names)
+    return name
