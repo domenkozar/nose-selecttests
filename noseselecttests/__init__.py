@@ -1,65 +1,104 @@
 from fnmatch import fnmatch
 
 from nose.plugins.base import Plugin
+from nose.selector import Selector
+from types import ClassType, ModuleType
+
+
+class MockPlugins(object):
+    '''Mock "plugins" that does nothing'''
+    def wantClass(self, cls):
+        return None
+    def wantDirectory(self, dirname):
+        return None
+    def wantFile(self, file):
+        return None
+    def wantFunction(self, function):
+        return None
+    def wantMethod(self, method):
+        return None
+    def wantModule(self, module):
+        return None
 
 
 class NoseSelectPlugin(Plugin):
-    """Selects test to run based on test function or method names using glob patterns (See fnmatch)."""
+    """Selects test to run based on tests names matching a pattern."""
 
     def options(self, parser, env):
         """Register command line options"""
         parser.add_option("-t", "--select-tests",
-                          dest="selected_tests", action="append",
+                          dest="selection_criteria", action="append",
                           default=list(),
                           metavar="SELECT",
-                          help="Only run tests matching this glob pattern (*?[]) (case-insensitive)")
+                          help="Only run tests with a name matching a case-insensitive glob pattern (See fnmatch)")
+
+    def _as_pattern(self, criterion):
+        # transforms selection criteria in glob patterns
+        return '*%s*' % criterion.lower().strip('*')
+
+    def add_criterion(self, criterion):
+        #used mostly for testing
+        if not hasattr(self, 'selection_criteria'):
+            self.selection_criteria = []
+        self.selection_criteria.append(self._as_pattern(criterion))
 
     def configure(self, options, config):
-        self.selected_tests = []
+        self.selection_criteria = [self._as_pattern(criterion) 
+                                   for criterion in options.selection_criteria
+                                   if criterion and criterion.strip()]
 
-        for test_name in options.selected_tests:
-            if test_name:
-                self.selected_tests.append(test_name)
-
-        if self.selected_tests:
+        if self.selection_criteria:
             self.enabled = True
 
-    def _is_selected(self, test_fun):
-        """Return True if a test function or method name should be selected based on patterns."""
-        if not test_fun:
+        # use a base selector to ensure we are additive to the basic selection
+        self.base_selector = Selector(config)
+        self.base_selector.configure(config)
+        # we use a mock for plugins to avoid our plugin to be called 
+        # in a loop from the Selector (and avoid an infinite loop)
+        self.base_selector.plugins = MockPlugins()
+
+    def _is_selected(self, test_obj):
+        """Return True if a test object should be selected based on criteria pattern."""
+        if not test_obj:
             return
+        if isinstance(test_obj, basestring):
+            name = test_obj
+        else:
+            name = objname(test_obj)
+        if name:
+            name = name.lower()
+            matched = lambda pat: fnmatch(name, pat)
+            selected = any(matched(pat) for pat in self.selection_criteria)
+            return selected
+        else:
+            return False
 
-        name = funame(test_fun)
-            
-        for pattern in self.selected_tests:
-            if not pattern.endswith('*'):
-                pattern = pattern + '*'
-            if not pattern.startswith('*'):
-                pattern = '*' + pattern
-            if fnmatch(name.lower(), pattern.lower()):
-                return True
+    def wantClass(self, cls):
+        return self.base_selector.wantClass(cls) and self._is_selected(cls)
 
-        # not None: None means don't care, not False.
-        return False 
+    def wantMethod(self, method):
+        return self.base_selector.wantMethod(method) and self._is_selected(method)
 
     def wantFunction(self, function):
-        return self._is_selected(function)
-    
-    def wantMethod(self, method):
-        return self._is_selected(method)
+        return self.base_selector.wantFunction(function) and self._is_selected(function)
 
 
-def funame(fun):
-    '''Return the context qualified name of a function or method'''
+def objname(obj):
+    '''Return the context qualified name of a function, method or class obj'''
+    if hasattr(obj, 'name'):
+        return obj.name
     # name proper
-    names = [fun.__name__]
+    if hasattr(obj, '__name__'):
+        names = [obj.__name__]
+    else:
+        #this is a class?
+        names = [obj.__class__.__name__]
     # parent class if method
-    if hasattr(fun, 'im_name'):
+    if hasattr(obj, 'im_class'):
         # this is a method
-        names.insert(0, fun.im_name.__name__)
+        names.insert(0, obj.im_class.__name__)
     #module, but ignore __main__ module
-    if not fun.__module__.startswith('_'):
-        names.insert(0, fun.__module__)
-    
+    if hasattr(obj, '__module__') and not obj.__module__.startswith('_'):
+        names.insert(0, obj.__module__)
     name = '.'.join(names)
     return name
