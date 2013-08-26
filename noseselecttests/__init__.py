@@ -73,9 +73,6 @@ class NoseSelectPlugin(Plugin):
         else:
             return False
 
-    def wantClass(self, cls):
-        return self.base_selector.wantClass(cls) and self._is_selected(cls)
-
     def wantMethod(self, method):
         return self.base_selector.wantMethod(method) and self._is_selected(method)
 
