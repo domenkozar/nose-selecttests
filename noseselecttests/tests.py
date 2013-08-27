@@ -1,6 +1,9 @@
+import os
 import unittest
 
+from nose.plugins import PluginTester
 from noseselecttests import NoseSelectPlugin
+from nose.plugins.base import Plugin
 
 
 class DummyOptParser(object):
@@ -160,3 +163,35 @@ class NoseSelectPluginTest(unittest.TestCase):
         plugin = NoseSelectPlugin()
         plugin.add_criterion('NoseSelectPluginTest.test_configure_complex')
         self.assertTrue(plugin._is_selected(to))
+
+
+base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'functional_tests')
+
+#functional tests using the nose PluginTester
+class NoseSelectPluginTesterPositiveTest(PluginTester, unittest.TestCase):
+    activate = ''
+    plugins = [NoseSelectPlugin()]
+    suitepath = base_dir
+    args = ['-v', '--exe','--select-tests=is_selected' ]
+
+    def test_selection_is_correct(self):
+        assert all(x in self.output 
+                   for x in ['tests.test_module.TestClassWithSetupAndSelectedMethod_but_Class_that_is_not_selected',
+                             'tests.test_module.test_bare_function_that_is_selected',
+                             'tests.test_module_with_not_selected_class.test_bare_function_that_is_selected',])
+
+
+class NoseSelectPluginTesterIvertedTest(PluginTester, unittest.TestCase):
+    activate = ''
+    plugins = [NoseSelectPlugin()]
+    suitepath = base_dir
+    args = ['-v', '--exe','--select-tests=is_not_selected' ]
+
+    def test_selection_is_correctly_inverted(self):
+        print self.output
+        assert all(x in self.output 
+                   for x in ['FAIL: tests.test_module_with_not_selected_class.test_bare_function_that_is_not_selected',
+                             "ERROR: test suite for <class 'tests.test_module_with_not_selected_class.TestClassWithSetupNotSelected_that_is_not_selected'>",
+                             'test_method_that_is_not_selected (tests.test_module.TestClassWithSetupAndSelectedMethod_but_Class_that_is_not_selected) ... ok',
+                             'test_method_that_is_selected (tests.test_module.TestClassWithSetupAndSelectedMethod_but_Class_that_is_not_selected) ... ok',
+        ])

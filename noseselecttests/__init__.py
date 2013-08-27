@@ -1,12 +1,18 @@
+
+import logging
 from fnmatch import fnmatch
+from types import ClassType, ModuleType
 
 from nose.plugins.base import Plugin
 from nose.selector import Selector
-from types import ClassType, ModuleType
+
+log = logging.getLogger(__name__)
 
 
 class MockPlugins(object):
-    '''Mock "plugins" that does nothing'''
+    '''Mock "plugins" that does nothing to avoid infinite recursion calls 
+       from Selector'''
+
     def wantClass(self, cls):
         return None
     def wantDirectory(self, dirname):
@@ -65,10 +71,12 @@ class NoseSelectPlugin(Plugin):
             name = test_obj
         else:
             name = objname(test_obj)
+        #log.debug('object name: %r' % name)
         if name:
             name = name.lower()
             matched = lambda pat: fnmatch(name, pat)
             selected = any(matched(pat) for pat in self.selection_criteria)
+            #log.debug('selected:%r name: %r' % (selected, name,))
             return selected
         else:
             return False
