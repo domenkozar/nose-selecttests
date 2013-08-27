@@ -4,12 +4,18 @@ import os
 from setuptools import setup, find_packages
 
 
+def read(*rnames):
+    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+
+
 version = '0.5.dev0'
 
 setup(name='nose-selecttests',
       version=version,
       description="Specify whitelist of keywords for tests to be run by nose",
-      long_description="""""",
+      long_description=read('README.rst') + '\n\n' +
+                       read('HISTORY.rst') + '\n\n' +
+                       read('LICENSE'),
       classifiers=[
       ],
       keywords='',
