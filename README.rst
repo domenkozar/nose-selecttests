@@ -104,6 +104,12 @@ To just exclude some tests, use `-e` which is provided by `nose` itself::
 
 History
 -------
+0.4 (in development)
+====================
+
+- Fixed bug to avoid running class fixtures if a test is not selected.
+- Added PluginTester tests
+
 
 
 0.3 (2012/12/29)
