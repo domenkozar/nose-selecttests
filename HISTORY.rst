@@ -1,8 +1,8 @@
 History
 -------
 
-0.4 (in development)
-====================
+0.4 (2013-08-27)
+================
 
 - Fixed bug to avoid running class fixtures if a test is not selected.
   [Philippe Ombredanne]
