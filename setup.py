@@ -4,7 +4,7 @@ import os
 from setuptools import setup, find_packages
 
 
-version = '0.4.dev2'
+version = '0.4'
 
 setup(name='nose-selecttests',
       version=version,
