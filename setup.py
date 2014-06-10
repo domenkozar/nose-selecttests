@@ -28,6 +28,7 @@ setup(name='nose-selecttests',
       zip_safe=False,
       install_requires=[
           'nose',
+          'six',
       ],
       entry_points={
           'nose.plugins.0.10': [

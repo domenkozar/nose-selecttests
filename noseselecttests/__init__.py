@@ -1,7 +1,8 @@
 
 import logging
 from fnmatch import fnmatch
-from types import ClassType, ModuleType
+
+import six
 
 from nose.plugins.base import Plugin
 from nose.selector import Selector
@@ -67,15 +68,14 @@ class NoseSelectPlugin(Plugin):
         """Return True if a test object should be selected based on criteria pattern."""
         if not test_obj:
             return
-        if isinstance(test_obj, basestring):
+        if isinstance(test_obj, six.string_types):
             name = test_obj
         else:
             name = objname(test_obj)
         #log.debug('object name: %r' % name)
         if name:
             name = name.lower()
-            matched = lambda pat: fnmatch(name, pat)
-            selected = any(matched(pat) for pat in self.selection_criteria)
+            selected = any(fnmatch(name, pat) for pat in self.selection_criteria)
             #log.debug('selected:%r name: %r' % (selected, name,))
             return selected
         else:
@@ -98,11 +98,28 @@ def objname(obj):
     else:
         #this is a class?
         names = [obj.__class__.__name__]
-    # parent class if method
-    if hasattr(obj, 'im_class'):
-        # this is a method
-        names.insert(0, obj.im_class.__name__)
-    #module, but ignore __main__ module
+
+    # parent class if unbound method
+    cls = None
+    if six.PY2:
+        if hasattr(obj, 'im_class'):
+            # this is a method
+            cls = obj.im_class
+    else:
+        if getattr(obj, '__self__', None) is not None:
+            if getattr(obj.__self__, 'cls', None) is not None:
+                cls = obj.__self__.cls
+    # parent class if bound method
+    if getattr(obj, '__self__', None) is not None:
+        if getattr(obj.__self__, '__class__', None) is not None:
+            cls = obj.__self__.__class__
+    
+    if cls is not None:
+        names.insert(0, cls.__name__)
+
+    # module, but ignore __main__ module
+    if cls is not None:
+        obj = cls
     if hasattr(obj, '__module__') and not obj.__module__.startswith('_'):
         names.insert(0, obj.__module__)
     name = '.'.join(names)

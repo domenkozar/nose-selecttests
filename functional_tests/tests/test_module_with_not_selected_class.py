@@ -2,7 +2,7 @@ from unittest import TestCase
 
 
 def test_bare_function_that_is_selected():
-    print 'should be called'
+    print('should be called')
 
 
 def test_bare_function_that_is_not_selected():
