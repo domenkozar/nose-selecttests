@@ -4,7 +4,8 @@ History
 0.5 (unreleased)
 ================
 
-- Nothing changed yet.
+- Python 3 support
+  [Domen Kožar]
 
 
 0.4 (2013-08-27)
