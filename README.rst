@@ -1,7 +1,7 @@
-Simple `nose` plugin that enables developers to run subset of collected tests
+Simple ``nose`` plugin that enables developers to run subset of collected tests
 to spare some waiting time for better things. 
 
-Supports Python 2.x and 3.x, see `.travis.yml` for specific versions being tested.
+Supports Python 2.x and 3.x, see ``.travis.yml`` for specific versions being tested.
 
 
 Usage
