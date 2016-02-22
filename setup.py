@@ -14,7 +14,7 @@ setup(name='nose-selecttests',
       version=version,
       description="Specify whitelist of keywords for tests to be run by nose",
       long_description=read('README.rst') + '\n\n' +
-                       read('HISTORY.rst') + '\n\n' +
+                       read('HISTORY.rst') + '\n\nLicense\n-------\n' +
                        read('LICENSE'),
       classifiers=[
       ],
