@@ -10,7 +10,7 @@ History
 0.5 (2016-02-22)
 ================
 
-- Python 3 support
+- Python 3 support (sponsored by NiteoWeb Ltd.)
   [Domen Kožar]
 
 
